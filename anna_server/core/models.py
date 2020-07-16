@@ -34,11 +34,18 @@ class Doodle(models.Model):
         get_latest_by = "created_at"
 
     def to_epaper_format(self):
+        return ",".join(self.to_epaper_array())
+
+    def to_epaper_array(self):
         """Image must be converted into a stream of hex values.
 
         Values are from 0 to 255 where each value have 8 pixels.
         """
-        im = Image.open(self.image.file)
+        if not self.image:
+            return []
+
+        im = Image.open(self.processed_image.file)
+        im = im.convert("1")
         stream = []
         buf = []
         for y in range(im.size[1]):
@@ -47,6 +54,6 @@ class Doodle(models.Model):
                 pixel = pixel if pixel == 0 else 1
                 buf.append(pixel)
                 if len(buf) == 8:
-                    stream.append(hex(int("".join(str(p) for p in buf), 2)))
+                    stream.append(str(int("".join(str(p) for p in buf), 2)))
                     buf = []
-        return ",".join(stream)
+        return stream

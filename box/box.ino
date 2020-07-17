@@ -24,20 +24,43 @@ const char* password = "bartholomeu";
 const String server = "http://10.0.1.4:8000/";
 int last_timestamp = 2;
 unsigned char IMAGE[15000];
+const unsigned char Passive_buzzer = D6;
+unsigned int server_tries = 0;
 
 Epd epd;
 
 
 void setup() {
   Serial.begin(115200);
-  if (epd.Init() != 0) {
-    Serial.print("e-Paper init failed");
-    return;
-  }
+  Serial.print("Starting");
+  pinMode (Passive_buzzer, OUTPUT) ;
+  noTone(Passive_buzzer);
+  beep();
+//  if (epd.Init() != 0) {
+//    Serial.print("e-Paper init failed");
+//    return;
+//  }
 
   epd.ClearFrame();
   WiFi.begin(ssid, password);
+}
 
+void beep() {
+  tone(Passive_buzzer, 2000);
+  delay(20);
+  for (uint i = 2300; i < 2900; i = i + 4) {
+    tone(Passive_buzzer, i) ; //FA note ...
+    delay(1);
+  }
+  noTone(Passive_buzzer);
+  delay(20);
+  for (uint i = 2700; i > 2500; i = i - 1) {
+    tone(Passive_buzzer, i);
+    delay(1);
+  }
+  tone(Passive_buzzer, 2500);
+  delay (100);
+  noTone(Passive_buzzer);
 }
 
 void get_image() {
@@ -49,8 +72,6 @@ void get_image() {
     Serial.println(httpCode);
     if (httpCode > 0) {     
       String payload = http_image.getString();
-//      Serial.println(payload);
-
       int previous_index = -1;
       int next_index = payload.indexOf(",", 0);
       while (next_index != -1) {
@@ -59,21 +80,57 @@ void get_image() {
         image_index++;
         previous_index = next_index;
         next_index = payload.indexOf(",", previous_index + 1);
-      }
-    
-    
+      }    
     }
     http_image.end();
   }
+  epd.Reset();
+  epd.Init();
+  epd.ClearFrame();
+  epd.DisplayFrame(IMAGE);
+  epd.Sleep();
+  beep();
+}
 
+void connection_failed() {
+  epd.Reset();
+  epd.Init();
+  epd.ClearFrame();
+  unsigned char image[1500];
+  Paint paint(image, 400, 28);    //width should be the multiple of 8 
+
+  paint.Clear(UNCOLORED);
+  paint.DrawStringAt(0, 0, "Failed to connect to wifi", &Font12, COLORED);
+  epd.SetPartialWindow(paint.GetImage(), 10, 40, paint.GetWidth(), paint.GetHeight());
+  epd.DisplayFrame();
+}
+
+void server_failed() {
+  epd.Reset();
+  epd.Init();
+  epd.ClearFrame();
+  unsigned char image[1500];
+  Paint paint(image, 400, 28);    //width should be the multiple of 8 
+
+  paint.Clear(UNCOLORED);
+  paint.DrawStringAt(0, 0, "Failed to connect to server", &Font12, COLORED);
+  epd.SetPartialWindow(paint.GetImage(), 10, 40, paint.GetWidth(), paint.GetHeight());
+  epd.DisplayFrame();
 }
 
 void loop() {
-  if (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED) {
     WiFi.begin(ssid, password);
+    uint8 timeout = 0;
     while (WiFi.status() != WL_CONNECTED) {
       delay(1000);
-      Serial.print("Connecting..");
+      Serial.println("Connecting..");
+      if (timeout > 30) {
+        Serial.println("Timeout");
+        connection_failed();
+        break;
+      }
+      timeout++;
     }
   }
 
@@ -89,15 +146,17 @@ void loop() {
       get_image();
       last_timestamp = payload.toInt();
     }
+  } else {
+    if (server_tries >= 3) {
+      server_failed();
+      server_tries = 0;
+    } else {
+      server_tries++;
+    }
   }
   http.end();
   Serial.println(last_timestamp);
-  delay(5000);
 
-//  // put your main code here, to run repeatedly:
-  epd.ClearFrame();
-  epd.DisplayFrame(IMAGE);
-////  epd.Sleep();
   delay(15000);
 
 }

@@ -3,9 +3,9 @@ from core.models import Doodle
 
 
 def index(request):
-    from datetime import datetime
+    # from datetime import datetime
 
-    return HttpResponse(int(datetime.now().timestamp()))
+    # return HttpResponse(int(datetime.now().timestamp()))
 
     doodle = Doodle.objects.order_by("created_at").filter(active=True).last()
     if not doodle:

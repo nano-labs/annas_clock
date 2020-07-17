@@ -1,3 +1,14 @@
+//E-paper setup:
+//VCC  -> 3V
+//GND  -> G
+//DIN  -> D7
+//CLK  -> D5
+//CS   -> D8
+//DC   -> D2
+//RST  -> D3
+//BUSY -> D1
+
+
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <SPI.h>

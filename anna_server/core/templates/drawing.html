@@ -1,268 +1,145 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title></title>
-  <script type="text/javascript" src="https://code.jquery.com/jquery-1.6.2.min.js"></script>
-  <style type="text/css">
-      
-    h1 {
-     font-size: 20px;
-     font-weight: bold;   
+
+<!DOCTYPE html> 
+<html> 
+<head> 
+  <meta name="viewport" content="user-scalable=no,initial-scale=1.0,maximum-scale=1.0" />
+
+  <style>
+  body { padding:10px; margin:0px; background-color: #ccc; }
+  #main { margin: 10px auto 0px auto; }
+  </style>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  
+
+</head> 
+<body>
+  {% csrf_token %}
+<button id="save">save</button><br>
+<canvas id="main" width="300" height="400"></canvas>
+<script type="text/javascript">
+  window.onload = function() {
+
+    document.ontouchmove = function(e){ e.preventDefault(); }
+
+    var canvas  = document.getElementById('main');
+    var canvastop = canvas.offsetTop
+
+    var context = canvas.getContext("2d");
+
+    var lastx;
+    var lasty;
+    var down;
+
+    context.strokeStyle = "#000000";
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+    context.lineWidth = 15;
+
+    function clear() {
+      context.fillStyle = "#ffffff";
+      context.rect(0, 0, 300, 400);
+      context.fill();
     }
 
-    #canvas-display {
-          border: solid 1px greenyellow;
-          cursor: crosshair;
-          float: left;
-          }
+    function dot(x,y) {
+      context.beginPath();
+      context.fillStyle = "#000000";
+      context.arc(x,y,1,0,Math.PI*2,true);
+      context.fill();
+      context.stroke();
+      context.closePath();
+    }
 
-    #colors {
-          background-color: #fff;
-          border: 1px solid #000000;
-          display: none;
-          float: left;
-          left: -55px;
-          margin-top: 10px;
-          padding: 0;
-          position: relative;
-          width: 50px;
-          }
-      
-    #colors li {
-          border: 1px solid #000000;
-          height: 20px;
-          width: 20px;
-          cursor: pointer;
-          float: left;
-          margin: 1px;
-          list-style: none;
-          }
-      
-    #colors li.selected {
-          border: solid 1px #eee;
-          }
+    function line(fromx,fromy, tox,toy) {
+      context.beginPath();
+      context.moveTo(fromx, fromy);
+      context.lineTo(tox, toy);
+      context.stroke();
+      context.closePath();
+    }
 
-    #controls {
-          background: none repeat scroll 0 0 grey;
-          border: 1px solid;
-          border-radius: 5px 5px 5px 5px;
-          cursor: pointer;
-          font-weight: bold;
-          margin-left: -72px;
-          opacity: 0.7;
-          padding: 5px;
-          position: relative;
-          top: 5px;
+    canvas.ontouchstart = function(event){                   
+      event.preventDefault();                 
+      
+      lastx = event.touches[0].clientX;
+      lasty = event.touches[0].clientY - canvastop;
+
+      dot(lastx,lasty);
+    }
+    canvas.onmousedown = function(event){                   
+      event.preventDefault();
+      down = true;
+      
+      lastx = event.clientX;
+      lasty = event.clientY - canvastop;
+
+      dot(lastx,lasty);
+    }
+    canvas.onmousemove = function(event){                   
+      event.preventDefault();                 
+
+      var newx = event.clientX;
+      var newy = event.clientY - canvastop;
+
+      if (down) {
+        line(lastx,lasty, newx,newy);
       }
       
-    #control-buttons {
-          background-color: gray;
-          border: 1px solid #000000;
-          border-radius: 5px 5px 5px 5px;
-          display: none;
-          float: left;
-          margin-left: 1px;
-          margin-top: -78px;
-          opacity: 0.7;
-          padding: 10px;
-          position: relative;
-          width: 378px;   
+      lastx = newx;
+      lasty = newy;
+    }
+    canvas.onmouseup = function(event){                   
+      event.preventDefault();
+      down = false;
+    }
+    canvas.ontouchmove = function(event){                   
+      event.preventDefault();                 
+
+      var newx = event.touches[0].clientX;
+      var newy = event.touches[0].clientY - canvastop;
+
+      line(lastx,lasty, newx,newy);
+      
+      lastx = newx;
+      lasty = newy;
     }
 
-  </style>
-</head>
 
-<body>
-  <h1>Free Hand Drawer using HTML5 Canvas</h1>
+    // var clearButton = document.getElementById('clear')
+    // clearButton.onclick = clear
+    var saveButton = document.getElementById('save')
+    saveButton.onclick = save
 
-  <span id="controls">Controls</span>
-            <canvas id="canvas-display" width="400" height="300" ></canvas>
-            <br/>
-            <ul id="colors">
-                <li style="background-color:black;"> </li>
-                <li style="background-color:red;"> </li>
-                <li style="background-color:green;"> </li>
-                <li style="background-color:orange;"> </li>
-                <li style="background-color:brown;"> </li>
-                <li style="background-color:#d2232a;"> </li>
-                <li style="background-color:#fcb017;"> </li>
-                <li style="background-color:#fff460;"> </li>
-                <li style="background-color:#9ecc3b;"> </li>
-                <li style="background-color:#fcb017;"> </li>
-                <li style="background-color:#fff460;"> </li>
-                <li style="background-color:#F43059;"> </li>
-                <li style="background-color:#82B82C;"> </li>
-                <li style="background-color:#0099FF;"> </li>
-                <li style="background-color:#ff00ff;"> </li>
-            </ul>
-            <br style="clear:both;"/>
-            <br style="clear:both;"/>
-            <div id="control-buttons">
-                <div style="float:left;">
-                <button id="undo" href="#" disabled="disabled">Undo</button>
-                <button id="clear" href="#">Reset</button>
-                <button id="export" href="#">Save as Image</button>
-                </div>
-                <div style="float:left;margin-left: 22px;text-align: center;width: 130px;">
-                Brush Size:<br />
-                <input name="brush" id="brush_size" type="range" value="5"  min="0" max="20" />
-                </div>
-            </div>
-        <script type="text/javascript">
-          
-        $(document).ready(function(){
-              $.fn.paintBrush = function(options) {
-                  var undoHistory = [];
-                      var settings = {
-                       'targetID' : 'canvas-display'
-                  },
-          
-                      $this = $(this),
-                      o = {},
-                      ui = {},
-                  
-                  core = {
-                      init : function(options) {
-                          ui.$loadParentDiv = o.targetID;
-                          core.draw();
-                          core.controls();
-                          //core.toggleScripts();
-                      },
-          
-                      canvasInit : function() {
-                              context = document.getElementById("canvas-display").getContext("2d");
-                              context.lineCap = "round";
-                              //Fill it with white background
-                              context.save();
-                              context.fillStyle = '#fff';
-                              context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-                              context.restore();
-                      },
-                      
-                      saveActions : function() {
-                              var imgData = document.getElementById("canvas-display").toDataURL("image/png");
-                              undoHistory.push(imgData);
-                              $('#undo').removeAttr('disabled');
-                      
-                      },
-                      
-                      undoDraw : function() {
-                          if(undoHistory.length > 0){
-                              var undoImg = new Image();
-                              $(undoImg).load(function(){
-                                  var context = document.getElementById("canvas-display").getContext("2d");
-                                  context.drawImage(undoImg, 0,0);
-                              });
-                              undoImg.src = undoHistory.pop();
-                              if(undoHistory.length == 0)
-                                  $('#undo').attr('disabled','disabled');
-                          }                            
-                      },
-          
-                      draw : function() {
-                              var canvas, cntxt, top, left, draw, draw = 0;                
-                              canvas = document.getElementById("canvas-display");
-                              cntxt = canvas.getContext("2d");
-                              top = $('#canvas-display').offset().top;
-                              left = $('#canvas-display').offset().left;
-                              core.canvasInit();
-                                  
-                              //Drawing Code
-                              $('#canvas-display').mousedown(function(e){
-                                  if(e.button == 0){
-                                      draw = 1;
-                                      core.saveActions(); //Start The drawing flow. Save the state
-                                      cntxt.beginPath();
-                                      cntxt.moveTo(e.pageX-left, e.pageY-top);
-                                  } else {
-                                      draw = 0;
-                                  }
-                              })
-                               .mouseup(function(e){
-                                      if(e.button != 0){
-                                          draw = 1;
-                                      } else {
-                                          draw = 0;
-                                          cntxt.lineTo(e.pageX-left+1, e.pageY-top+1);
-                                          cntxt.stroke();
-                                          cntxt.closePath();
-                                      }
-                              })
-                               .mousemove(function(e){
-                                      if(draw == 1){
-                                          cntxt.lineTo(e.pageX-left+1, e.pageY-top+1);
-                                          cntxt.stroke();
-                                      }
-                              });
-                                                                                                  
-                      },
-                      
-                      controls : function() {
-                              canvas = document.getElementById("canvas-display");
-                              cntxt = canvas.getContext("2d");
-                              $('#export').click(function(e){
-                                       e.preventDefault();
-                                      window.open(canvas.toDataURL(), 'Canvas Export','height=400,width=400');
-                               });
-                                          
-                               $('#clear').live("click", function(e){
-                                       e.preventDefault();
-                                      canvas.width = canvas.width;
-                                      canvas.height = canvas.height;
-                                      core.canvasInit();
-                                      $('#colors li:first').click();
-                                      $('#brush_size').change();
-                                      //core.toggleScripts();
-                                      undoHistory = [];
-                                });
-                                          
-                                $('#brush_size').change(function(e){
-                                        cntxt.lineWidth = $(this).val();
-                                        //core.toggleScripts();
-                                });            
-                                
-                                $('#colors li').live("click", function(e){
-                                        e.preventDefault();
-                                      $('#colors li').removeClass('selected');
-                                      $(this).addClass('selected');
-                                      cntxt.strokeStyle = $(this).css('background-color');
-                                      core.toggleScripts();
-                                });
-                          
-                                          //Undo Binding
-                                $('#undo').live("click", function(e){
-                                        e.preventDefault();
-                                      core.undoDraw()
-                                      core.toggleScripts();
-                                });
-                          
-                                //Init the brush and color
-                                $('#colors li:first').click();
-                                $('#brush_size').change();
-                                          
-                                $('#controls').live("click", function(){
-                                        core.toggleScripts();
-                                });
-                      },
-                      
-                      toggleScripts : function() {
-                               $('#colors').slideToggle(400);
-                               $('#control-buttons').toggle(400);
-                      }
-                  };
-          
-                  $.extend(true, o, settings, options);
-          
-                  core.init();
-          
-              };
-          })(jQuery);
-        </script>
-        <script type="text/javascript">
-            $(document).ready(function(){
-                $('#canvas-display').paintBrush();
-                });
-        </script>
+    clear()
+  };
+  function csrfSafeMethod(method) {
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  };
 
+  function save(){
+    var csrftoken = $("input[name='csrfmiddlewaretoken']").val();
+    var canvas  = document.getElementById("main");
+    ctx = canvas.getContext("2d");
+    ctx.rotate(90 * Math.PI / 180);
+    var dataURL = canvas.toDataURL();
+
+    $.ajax({
+      type: "POST",
+      data: { 
+         imgBase64: dataURL
+      },
+      beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+      },
+    })
+    .done(function(o) {
+      console.log('saved'); 
+
+    });
+
+  }
+</script>
 </body>
 </html>

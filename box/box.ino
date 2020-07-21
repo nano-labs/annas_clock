@@ -49,16 +49,16 @@ void beep() {
   tone(Passive_buzzer, 2000);
   delay(20);
   for (uint i = 2300; i < 2900; i = i + 4) {
-    tone(Passive_buzzer, i) ; //FA note ...
-    delay(1);
-  }
-  noTone(Passive_buzzer);
-  delay(20);
-  for (uint i = 2700; i > 2500; i = i - 1) {
     tone(Passive_buzzer, i);
     delay(1);
   }
-  tone(Passive_buzzer, 2500);
+  noTone(Passive_buzzer);
+  delay(50);
+  for (uint i = 2700; i > 2400; i = i - 2) {
+    tone(Passive_buzzer, i);
+    delay(1);
+  }
+  tone(Passive_buzzer, 2400);
   delay (100);
   noTone(Passive_buzzer);
 }

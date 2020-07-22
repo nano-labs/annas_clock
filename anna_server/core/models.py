@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.cache import cache
 from django.contrib.auth.models import User
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
@@ -44,16 +45,20 @@ class Doodle(models.Model):
         if not self.image:
             return []
 
-        im = Image.open(self.processed_image.file)
-        im = im.convert("1")
-        stream = []
-        buf = []
-        for y in range(im.size[1]):
-            for x in range(im.size[0]):
-                pixel = im.getpixel((x, y))
-                pixel = pixel if pixel == 0 else 1
-                buf.append(pixel)
-                if len(buf) == 8:
-                    stream.append(str(int("".join(str(p) for p in buf), 2)))
-                    buf = []
+        cache_key = f"doodle_{self.id}"
+        stream = cache.get(cache_key)
+        if not stream:
+            im = Image.open(self.processed_image.file)
+            im = im.convert("1")
+            stream = []
+            buf = []
+            for y in range(im.size[1]):
+                for x in range(im.size[0]):
+                    pixel = im.getpixel((x, y))
+                    pixel = pixel if pixel == 0 else 1
+                    buf.append(pixel)
+                    if len(buf) == 8:
+                        stream.append(str(int("".join(str(p) for p in buf), 2)))
+                        buf = []
+            cache.set(cache_key, stream, 30)
         return stream

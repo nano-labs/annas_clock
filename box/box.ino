@@ -46,6 +46,23 @@ void setup() {
 }
 
 void beep() {
+  tone(Passive_buzzer, 3000);
+  delay(100);
+  noTone(Passive_buzzer);
+  delay(100);
+  tone(Passive_buzzer, 4000);
+  delay(100);
+  noTone(Passive_buzzer);
+  delay(100);
+  tone(Passive_buzzer, 5000);
+  delay(100);
+  noTone(Passive_buzzer);
+  delay(100);
+  noTone(Passive_buzzer);
+  delay(5000);
+}
+
+void tweet() {
   tone(Passive_buzzer, 2000);
   delay(20);
   for (uint i = 2300; i < 2900; i = i + 4) {
@@ -65,7 +82,7 @@ void beep() {
 
 void get_image() {
   unsigned int image_index = 0;
-  for (uint8 lines = 0; lines < 50; lines++) {
+  for (uint8 lines = 0; lines < 25; lines++) {
     HTTPClient http_image;
     http_image.begin(server + "doodles/image/" + String(lines));
     int httpCode = http_image.GET();
@@ -89,7 +106,7 @@ void get_image() {
   epd.ClearFrame();
   epd.DisplayFrame(IMAGE);
   epd.Sleep();
-  beep();
+  tweet();
 }
 
 void connection_failed() {
@@ -157,6 +174,6 @@ void loop() {
   http.end();
   Serial.println(last_timestamp);
 
-  delay(15000);
+  delay(1000);
 
 }

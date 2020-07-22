@@ -119,8 +119,6 @@
   function save(){
     var csrftoken = $("input[name='csrfmiddlewaretoken']").val();
     var canvas  = document.getElementById("main");
-    ctx = canvas.getContext("2d");
-    ctx.rotate(90 * Math.PI / 180);
     var dataURL = canvas.toDataURL();
 
     $.ajax({
@@ -135,8 +133,9 @@
       },
     })
     .done(function(o) {
-      console.log('saved'); 
-
+      console.log('saved');
+      console.log(o);
+      window.location.replace("/core/doodle/" + o);
     });
 
   }

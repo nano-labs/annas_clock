@@ -174,6 +174,6 @@ void loop() {
   http.end();
   Serial.println(last_timestamp);
 
-  delay(1000);
+  delay(15000);
 
 }

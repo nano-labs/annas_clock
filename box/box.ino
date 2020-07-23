@@ -21,7 +21,7 @@
 
 const char* ssid = "Bartcaverna";
 const char* password = "bartholomeu";
-const String server = "http://10.0.1.4:8000/";
+const String server = "http://nanolabs.pythonanywhere.com/";
 int last_timestamp = 2;
 unsigned char IMAGE[15000];
 const unsigned char Passive_buzzer = D6;

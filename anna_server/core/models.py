@@ -86,8 +86,8 @@ def cleanup():
         if ff not in existing_images:
             to_delete.append(ff)
 
-    for f in os.listdir(os.path.join(settings.BASE_DIR, 'CACHE/images/doodles/')):
-        ff = os.path.join(settings.BASE_DIR, 'CACHE/images/doodles/', f)
+    for f in os.listdir(os.path.join(settings.MEDIA_ROOT, 'CACHE/images/doodles/')):
+        ff = os.path.join(settings.MEDIA_ROOT, 'CACHE/images/doodles/', f)
         if os.path.isdir(ff):
             for innerf in os.listdir(ff):
                 innerff = os.path.join(ff, innerf)

@@ -9,12 +9,27 @@
   #main { margin: 10px auto 0px auto; }
   </style>
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script type="text/javascript">
+    function handleClick(el) {
+      console.log(el.value);
+      console.log(context);
+      context.lineWidth = el.value;
+    }
+  </script>
   
 
 </head> 
 <body>
   {% csrf_token %}
-<button id="save">save</button><br>
+<button id="save">save</button>
+<input type="radio" id="line2" name="linewidth" value="2" onclick="handleClick(this);">
+<label for="line2">2</label>
+<input type="radio" id="line5" name="linewidth" value="5" onclick="handleClick(this);">
+<label for="line5">5</label>
+<input type="radio" id="line15" checked="checked" name="linewidth" value="15" onclick="handleClick(this);">
+<label for="line15">15</label>
+<input type="radio" id="line30" name="linewidth" value="30" onclick="handleClick(this);">
+<label for="line30">30</label> <br>
 <canvas id="main" width="300" height="400"></canvas>
 <script type="text/javascript">
   window.onload = function() {
@@ -24,7 +39,7 @@
     var canvas  = document.getElementById('main');
     var canvastop = canvas.offsetTop
 
-    var context = canvas.getContext("2d");
+    context = canvas.getContext("2d");
 
     var lastx;
     var lasty;

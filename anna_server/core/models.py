@@ -1,3 +1,4 @@
+import json
 from django.db import models
 from django.core.cache import cache
 from django.contrib.auth.models import User
@@ -30,6 +31,7 @@ class Doodle(models.Model):
     )
     owner = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     active = models.BooleanField(blank=True, default=False)
+    epaper_array = models.TextField(blank=True, default="")
 
     class Meta:
         get_latest_by = "created_at"
@@ -45,9 +47,10 @@ class Doodle(models.Model):
         if not self.image:
             return []
 
-        cache_key = f"doodle_{self.id}"
-        stream = cache.get(cache_key)
+        # cache_key = f"doodle_{self.id}"
+        stream = json.loads(self.epaper_array) if self.epaper_array else None
         if not stream:
+            print("#"*1000)
             im = Image.open(self.processed_image.file)
             im = im.convert("1")
             stream = []
@@ -60,5 +63,6 @@ class Doodle(models.Model):
                     if len(buf) == 8:
                         stream.append(str(int("".join(str(p) for p in buf), 2)))
                         buf = []
-            cache.set(cache_key, stream, 30)
+            self.epaper_array = json.dumps(stream)
+            self.save()
         return stream

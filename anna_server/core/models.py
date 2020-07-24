@@ -1,6 +1,7 @@
 import json
+import os
 from django.db import models
-from django.core.cache import cache
+from django.conf import settings
 from django.contrib.auth.models import User
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
@@ -66,3 +67,31 @@ class Doodle(models.Model):
             self.epaper_array = json.dumps(stream)
             self.save()
         return stream
+
+
+def cleanup():
+    existing_images = []
+    existing_processed_images = []
+    to_delete = []
+    for d in Doodle.objects.all():
+        existing_images.append(d.image.file.file.name)
+        existing_processed_images.append(d.processed_image.file.file.name)
+
+    for f in os.listdir(os.path.join(settings.BASE_DIR, 'doodles')):
+        ff = os.path.join(settings.BASE_DIR, 'doodles', f)
+        if ff not in existing_images:
+            to_delete.append(ff)
+
+    for f in os.listdir(os.path.join(settings.BASE_DIR, 'CACHE/images/doodles/')):
+        ff = os.path.join(settings.BASE_DIR, 'CACHE/images/doodles/', f)
+        if ff not in existing_processed_images:
+            to_delete.append(ff)
+    for f in to_delete:
+        if not os.path.isdir(f):
+            os.remove(f)
+    for f in to_delete:
+        if os.path.isdir(f):
+            try:
+                os.rmdir(f)
+            except OSError:
+                pass

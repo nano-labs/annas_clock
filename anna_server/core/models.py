@@ -68,6 +68,9 @@ class Doodle(models.Model):
             self.save()
         return stream
 
+    def save(self, *args, **kwargs):
+        super().save(*args)
+
 
 def cleanup():
     existing_images = []
@@ -77,8 +80,8 @@ def cleanup():
         existing_images.append(d.image.file.file.name)
         existing_processed_images.append(d.processed_image.file.file.name)
 
-    for f in os.listdir(os.path.join(settings.BASE_DIR, 'doodles')):
-        ff = os.path.join(settings.BASE_DIR, 'doodles', f)
+    for f in os.listdir(os.path.join(settings.MEDIA_ROOT, 'doodles')):
+        ff = os.path.join(settings.MEDIA_ROOT, 'doodles', f)
         if ff not in existing_images:
             to_delete.append(ff)
 

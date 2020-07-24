@@ -89,6 +89,7 @@ def cleanup():
     for f in os.listdir(os.path.join(settings.MEDIA_ROOT, 'CACHE/images/doodles/')):
         ff = os.path.join(settings.MEDIA_ROOT, 'CACHE/images/doodles/', f)
         if os.path.isdir(ff):
+            to_delete.append(ff)
             for innerf in os.listdir(ff):
                 innerff = os.path.join(ff, innerf)
                 if innerff not in existing_processed_images:

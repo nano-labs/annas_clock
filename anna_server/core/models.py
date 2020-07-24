@@ -70,6 +70,7 @@ class Doodle(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args)
+        cleanup()
 
 
 def cleanup():

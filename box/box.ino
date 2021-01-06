@@ -19,13 +19,20 @@
 #define COLORED     0
 #define UNCOLORED   1
 
-const char* ssid = "Bartcaverna";
-const char* password = "bartholomeu";
+const char* ssid = "VM4137051";
+const char* password = "Fy7msszzkHkj";
+const char* ssid2 = "VM4137051_EXT";
+const char* password2 = "Fy7msszzkHkj";
+//const char* ssid = "Bartcaverna";
+//const char* password = "bartholomeu";
+
 const String server = "http://nanolabs.pythonanywhere.com/";
-int last_timestamp = 2;
+//const String server = "http://10.0.1.4:8000/";
+int last_timestamp = 1597329883;
 unsigned char IMAGE[15000];
 const unsigned char Passive_buzzer = D6;
 unsigned int server_tries = 0;
+bool success = 0;
 
 Epd epd;
 
@@ -80,14 +87,14 @@ void tweet() {
   noTone(Passive_buzzer);
 }
 
-void get_image() {
+bool get_image() {
   unsigned int image_index = 0;
   for (uint8 lines = 0; lines < 25; lines++) {
     HTTPClient http_image;
     http_image.begin(server + "doodles/image/" + String(lines));
     int httpCode = http_image.GET();
     Serial.println(httpCode);
-    if (httpCode > 0) {     
+    if (httpCode == 200) {     
       String payload = http_image.getString();
       int previous_index = -1;
       int next_index = payload.indexOf(",", 0);
@@ -98,6 +105,8 @@ void get_image() {
         previous_index = next_index;
         next_index = payload.indexOf(",", previous_index + 1);
       }    
+    } else {
+      return false;
     }
     http_image.end();
   }
@@ -107,6 +116,7 @@ void get_image() {
   epd.DisplayFrame(IMAGE);
   epd.Sleep();
   tweet();
+  return true;
 }
 
 void connection_failed() {
@@ -142,11 +152,15 @@ void loop() {
     while (WiFi.status() != WL_CONNECTED) {
       delay(1000);
       Serial.println("Connecting..");
-      if (timeout > 30) {
-        Serial.println("Timeout");
+      if (timeout > 60) {
+        Serial.println("Timeout " + String(ssid2));
         connection_failed();
         break;
-      }
+      };
+      if (timeout == 30) {
+        Serial.println("Timeout " + String(ssid));
+        WiFi.begin(ssid2, password2);
+      };
       timeout++;
     }
   }
@@ -155,22 +169,26 @@ void loop() {
   http.begin(server + "doodles/");
   int httpCode = http.GET();
   Serial.println(httpCode);
-  if (httpCode > 0) {     
+  if (httpCode == 200) {     
     String payload = http.getString();
-    Serial.println(payload);
+//    Serial.println(payload);
     if (payload.toInt() > last_timestamp) {
       // download image here
-      get_image();
-      last_timestamp = payload.toInt();
+      success = get_image();
+      if (success == false) {
+        server_tries++;
+      } else {
+        last_timestamp = payload.toInt();
+      }
     }
   } else {
-    if (server_tries >= 3) {
-      server_failed();
-      server_tries = 0;
-    } else {
-      server_tries++;
-    }
+    server_tries++;
   }
+  if (server_tries >= 3) {
+    server_failed();
+    server_tries = 0;
+  }
+
   http.end();
   Serial.println(last_timestamp);
 

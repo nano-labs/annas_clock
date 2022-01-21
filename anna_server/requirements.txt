@@ -6,7 +6,7 @@ Django==3.0.8
 django-appconf==1.0.4
 django-imagekit==4.0.2
 ipdb==0.13.3
-ipython==7.16.1
+ipython==7.16.3
 ipython-genutils==0.2.0
 jedi==0.17.1
 parso==0.7.0
